@@ -3,6 +3,8 @@ const input = document.getElementById("item-input");
 const itemList = document.querySelector("ul");
 const clear = document.querySelector("#clear");
 const filter = document.querySelector("#filter");
+const formBtn = itemForm.querySelector("button");
+let isEditMode = false;
 
 function displayItems() {
   const itemsFromStorage = getItemsFromStorage();
@@ -19,6 +21,22 @@ function onAddItemSubmit(e) {
     alert("Add an Item");
     return;
   }
+
+  //check for edit mode
+
+  if (isEditMode) {
+    const itemToEdit = itemList.querySelector(".edit-mode");
+    removeItemFromStorage(itemToEdit.textContent);
+    itemToEdit.classList.remove("edit-mode");
+    itemToEdit.remove();
+    isEditMode = false;
+  } else {
+    if (checkDouble(newItem)) {
+      alert("Item Already Exists");
+      return;
+    }
+  }
+
   // create item DOM element
   addItemToDOM(newItem);
 
@@ -39,7 +57,6 @@ function addItemToDOM(item) {
   li.appendChild(button);
 
   //   add li to dom
-
   itemList.appendChild(li);
 }
 
@@ -68,6 +85,21 @@ function getItemsFromStorage() {
 function onClickItem(e) {
   if (e.target.parentElement.classList.contains("remove-item")) {
     removeItem(e.target.parentElement.parentElement);
+  } else {
+    setItemToEdit(e.target);
+  }
+
+  function setItemToEdit(item) {
+    isEditMode = true;
+
+    itemList
+      .querySelectorAll("li")
+      .forEach((i) => i.classList.remove("edit-mode"));
+
+    item.classList.add("edit-mode");
+    formBtn.style.backgroundColor = "#228B22";
+    formBtn.innerHTML = "<i class = 'fa-solid fa-pen'> </i> Update Item";
+    input.value = item.textContent;
   }
 }
 
@@ -122,8 +154,16 @@ function filterItems(e) {
   });
 }
 
+function checkDouble(item) {
+  const itemsFromStorage = getItemsFromStorage();
+  return itemsFromStorage.includes(item);
+}
+
 function checkUI() {
+  input.value = "";
+
   const items = itemList.querySelectorAll("li");
+
   if (items.length === 0) {
     clear.style.display = "none";
     filter.style.display = "none";
@@ -131,6 +171,11 @@ function checkUI() {
     clear.style.display = "block";
     filter.style.display = "block";
   }
+
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+  formBtn.style.backgroundColor = "#333";
+
+  isEditMode = false;
 }
 
 // Initialize app
